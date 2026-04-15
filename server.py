@@ -302,7 +302,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server = ThreadingHTTPServer(('localhost', PORT), Handler)
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), Handler)
     print()
     print('  ╔══════════════════════════════════════╗')
     print(f'  ║  台股查詢伺服器  http://localhost:{PORT}  ║')
