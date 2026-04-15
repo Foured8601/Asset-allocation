@@ -167,6 +167,28 @@ def get_stock(code):
     except Exception as e:
         print(f'  tpex_day miss: {e}')
 
+    # 5. 終極備援：Yahoo Finance Fallback (解決 Render IP 被台股伺服器封鎖的問題)
+    for suffix in ['.TW', '.TWO']:
+        try:
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(code + suffix)}"
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            body = fetch_url(url, headers, timeout=8)
+            data = json.loads(body)
+            if data.get('chart', {}).get('error'): continue
+            meta = data['chart']['result'][0]['meta']
+            price = meta.get('regularMarketPrice')
+            
+            if price:
+                return {
+                    'code': code, 'name': code, # Yahoo API 內沒有中文名字，先顯示代碼
+                    'exchange': 'Yahoo 備援',
+                    'price': price, 'prev': meta.get('chartPreviousClose'),
+                    'open': None, 'high': None, 'low': None, 'volume': None,
+                    'week52High': None, 'week52Low': None, 'source': 'yahoo'
+                }
+        except Exception as e:
+            print(f'  yahoo_fallback miss ({suffix}): {e}')
+
     return None
 
 # --- 新增：Yahoo Finance 代理 (支援美股、全球ETF及加密貨幣 fallback) ---
